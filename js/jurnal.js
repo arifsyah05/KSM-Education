@@ -26,6 +26,9 @@ class JournalManager {
     try {
       console.log("Loading journals from database...");
 
+      localStorage.removeItem("journals");
+      console.log("localStorage journals cleared");
+
       const response = await fetch("/ksmaja/api/list_journals.php?limit=100&offset=0");
       const data = await response.json();
 
@@ -72,22 +75,11 @@ class JournalManager {
         this.journals = [];
       }
     } catch (error) {
-      console.error("❌ Error loading journals from database:", error);
+      console.error(" Error loading journals from database:", error);
 
       //  FEATURE: Fallback to localStorage if database fails
-      console.warn("⚠️ Falling back to localStorage...");
-      const stored = localStorage.getItem("journals");
-      if (stored) {
-        try {
-          this.journals = JSON.parse(stored);
-          console.log(`📦 Loaded ${this.journals.length} journals from localStorage (fallback)`);
-        } catch (e) {
-          console.error("Failed to parse localStorage data:", e);
-          this.journals = [];
-        }
-      } else {
-        this.journals = [];
-      }
+      console.warn("Falling back to localStorage...");
+      this.journals = [];
     }
   }
 
@@ -243,7 +235,7 @@ class JournalManager {
   async deleteJournal(id, title = "") {
     //  Validate ID
     if (!id) {
-      alert("❌ ID journal tidak valid");
+      alert(" ID journal tidak valid");
       return;
     }
 
@@ -319,10 +311,10 @@ class JournalManager {
         throw new Error(result.message || "Gagal menghapus jurnal dari database");
       }
     } catch (error) {
-      console.error("❌ Delete error:", error);
+      console.error(" Delete error:", error);
 
       //  Error notification
-      alert("❌ Gagal menghapus jurnal: " + error.message);
+      alert(" Gagalmenghapusjurnal:" + error.message);
 
       //  Restore card UI on error
       const card = document.querySelector(`[data-journal-id="${id}"]`);
@@ -336,7 +328,7 @@ class JournalManager {
   // ===== UPDATE VIEWS COUNT =====
   async updateViews(id) {
     try {
-      console.log("👁️ Updating views for journal:", id);
+      console.log("Updating views for journal:", id);
 
       //  Update views in database
       const response = await fetch(`/ksmaja/api/update_views.php`, {
