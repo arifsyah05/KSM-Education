@@ -1,4 +1,4 @@
-// ===== Toast Helper (Global) =====
+// Fungsi helper untuk menampilkan notifikasi toast
 function showToast(msg, type = "ok") {
   const t = document.getElementById("toast");
   if (!t) return;
@@ -11,7 +11,7 @@ function showToast(msg, type = "ok") {
   }, 2000);
 }
 
-// ===== Hash Search Handler =====
+// Handler untuk pencarian via hash URL
 function setupHashSearch() {
   if (location.hash === "#search") {
     const search = document.querySelector(".search-box input");
@@ -24,7 +24,7 @@ function setupHashSearch() {
   }
 }
 
-// ===== PREVIEW VIEWER =====
+// Class untuk menangani modal preview jurnal
 class PreviewViewer {
   constructor() {
     this.modal = document.getElementById("previewModal");
@@ -53,14 +53,17 @@ class PreviewViewer {
 
   resolveJournal(id) {
     const idNum = Number(id);
+    // Cek di global journal manager
     if (window.journalManager?.journals) {
       const j = window.journalManager.journals.find((x) => x.id === idNum);
       if (j) return j;
     }
+    // Cek di pagination manager
     if (window.paginationManager?.journals) {
       const j = window.paginationManager.journals.find((x) => x.id === idNum);
       if (j) return j;
     }
+    // Cek di local storage sebagai fallback
     try {
       const list = JSON.parse(localStorage.getItem("journals") || "[]");
       return list.find((x) => x.id === idNum) || null;
@@ -116,7 +119,7 @@ class PreviewViewer {
   }
 }
 
-// ===== SEARCH FUNCTIONALITY =====
+// Class untuk menangani pencarian client-side
 class SearchManager {
   constructor() {
     this.searchInput = document.querySelector(".search-box input");
@@ -148,7 +151,7 @@ class SearchManager {
   }
 }
 
-// ===== MULTIPLE AUTHORS MANAGER (Support Multi-Instance) =====
+// Class untuk menangani input dinamis penulis
 class AuthorsManager {
   constructor(suffix = "") {
     this.suffix = suffix;
@@ -238,8 +241,7 @@ class AuthorsManager {
   }
 }
 
-// ===== EDIT JOURNAL MANAGER =====
-// ===== EDIT JOURNAL MANAGER (UPDATED WITH TAGS & PENGURUS) =====
+// Class untuk menangani edit jurnal, tags, dan pengurus
 class EditJournalManager {
   constructor() {
     this.modal = document.getElementById("editModal");
@@ -271,22 +273,21 @@ class EditJournalManager {
       this.closeEditModal();
     });
 
-    // Authors
+    // Event listener authors
     this.addAuthorBtn?.addEventListener("click", () => {
       this.addAuthorField();
     });
 
-    // ✅ Pengurus
+    // Event listener pengurus
     this.addPengurusBtn?.addEventListener("click", () => {
       this.addPengurusField();
     });
 
-    // ✅ Tags
+    // Event listener tags
     this.addTagBtn?.addEventListener("click", () => {
       this.addTag();
     });
 
-    // ✅ Tag input - Enter key
     this.tagInput?.addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
@@ -299,10 +300,9 @@ class EditJournalManager {
       this.handleEditSubmit();
     });
 
-    console.log("✅ EditJournalManager initialized (with Tags & Pengurus)");
+    console.log("EditJournalManager initialized");
   }
 
-  // ===== ADD TAG =====
   addTag() {
     const tag = this.tagInput.value.trim();
 
@@ -322,7 +322,6 @@ class EditJournalManager {
     this.tagInput.value = "";
   }
 
-  // ===== ADD PENGURUS FIELD =====
   addPengurusField() {
     const pengurusGroups = this.pengurusContainer.querySelectorAll(".pengurus-input-group");
     const nextIndex = pengurusGroups.length;
@@ -367,8 +366,6 @@ class EditJournalManager {
 
   openEditModal(journalId) {
     console.log("Opening edit modal for journal ID:", journalId);
-
-    // Ambil data journal dari database
     this.fetchJournalData(journalId);
   }
 
@@ -386,7 +383,7 @@ class EditJournalManager {
 
       this.currentJournalId = journalId;
 
-      // Isi field-field form
+      // Isi field form
       document.getElementById("editJournalId").value = journalId;
       document.getElementById("editJudulJurnal").value = journal.title || "";
       document.getElementById("editEmail").value = journal.email || "";
@@ -394,16 +391,10 @@ class EditJournalManager {
       document.getElementById("editVolume").value = journal.volume || "";
       document.getElementById("editAbstrak").value = journal.abstract || "";
 
-      // ✅ Populate Tags
       this.populateTags(journal.tags);
-
-      // ✅ Populate Pengurus
       this.populatePengurus(journal.pengurus);
-
-      // ✅ Populate Authors
       this.populateAuthors(journal.authors);
 
-      // Tampilkan modal
       this.modal.classList.add("active");
       document.body.style.overflow = "hidden";
 
@@ -412,11 +403,10 @@ class EditJournalManager {
       }
     } catch (error) {
       console.error("Error loading journal:", error);
-      alert("❌ Gagal memuat data jurnal: " + error.message);
+      alert("Gagal memuat data jurnal: " + error.message);
     }
   }
 
-  // ===== POPULATE TAGS =====
   populateTags(tags) {
     this.tagsContainer.innerHTML = "";
 
@@ -442,7 +432,6 @@ class EditJournalManager {
     });
   }
 
-  // ===== POPULATE PENGURUS =====
   populatePengurus(pengurus) {
     this.pengurusContainer.innerHTML = "";
 
@@ -458,7 +447,7 @@ class EditJournalManager {
     }
 
     if (pengurusArray.length === 0) {
-      this.addPengurusField(); // Add one empty field
+      this.addPengurusField();
       return;
     }
 
@@ -619,46 +608,37 @@ class EditJournalManager {
     const pengurus = this.getPengurus();
 
     try {
-      // ✅ GANTI DENGAN FORMDATA!
       const formData = new FormData();
 
-      // Add journal ID
       formData.append("id", this.currentJournalId);
 
-      // Add text fields
       if (judul) formData.append("title", judul);
       if (abstrak) formData.append("abstract", abstrak);
       if (email) formData.append("email", email);
       if (contact) formData.append("contact", contact);
       if (volume) formData.append("volume", volume);
 
-      // Add JSON arrays
       if (authors.length > 0) formData.append("authors", JSON.stringify(authors));
       if (tags.length > 0) formData.append("tags", JSON.stringify(tags));
       if (pengurus.length > 0) formData.append("pengurus", JSON.stringify(pengurus));
 
-      // ✅ HANDLE FILE UPLOAD
       const fileInput = document.getElementById("editFileInput");
       if (fileInput && fileInput.files[0]) {
         formData.append("file", fileInput.files[0]);
-        console.log("📄 Uploading new file:", fileInput.files[0].name);
+        console.log("Uploading new file:", fileInput.files[0].name);
       }
 
-      // ✅ HANDLE COVER UPLOAD
       const coverInput = document.getElementById("editCoverInput");
       if (coverInput && coverInput.files[0]) {
         formData.append("cover", coverInput.files[0]);
-        console.log("🖼️ Uploading new cover:", coverInput.files[0].name);
+        console.log("Uploading new cover:", coverInput.files[0].name);
       }
 
-      // Show loading
       this.showLoading("Menyimpan perubahan...");
 
-      // ✅ SEND REQUEST KE update_journal.php
       const response = await fetch("/ksmaja/api/update_journal.php", {
         method: "POST",
-        body: formData, // ← FormData, bukan JSON!
-        // ❌ JANGAN SET Content-Type header!
+        body: formData,
       });
 
       const result = await response.json();
@@ -669,10 +649,9 @@ class EditJournalManager {
         throw new Error(result.message || "Failed to update journal");
       }
 
-      alert("✅ Jurnal berhasil diupdate!");
+      alert("Jurnal berhasil diupdate!");
       this.closeEditModal();
 
-      // Clear cache & reload
       if ("caches" in window) {
         caches.keys().then((names) => {
           names.forEach((name) => caches.delete(name));
@@ -683,11 +662,10 @@ class EditJournalManager {
     } catch (error) {
       console.error("Edit journal error:", error);
       this.hideLoading();
-      alert("❌ Gagal update jurnal: " + error.message);
+      alert("Gagal update jurnal: " + error.message);
     }
   }
 
-  // ✅ TAMBAH METHOD LOADING
   showLoading(message) {
     let overlay = document.getElementById("editLoadingOverlay");
     if (!overlay) {
@@ -752,84 +730,40 @@ class EditJournalManager {
     this.currentJournalId = null;
     this.form.reset();
 
-    // Clear dynamic fields
     if (this.tagsContainer) this.tagsContainer.innerHTML = "";
     if (this.pengurusContainer) this.pengurusContainer.innerHTML = "";
     if (this.authorsContainer) this.authorsContainer.innerHTML = "";
   }
 }
 
-// function setupNavDropdown() {
-//   const dropdowns = document.querySelectorAll(".nav-dropdown");
-//   console.log("Found dropdowns:", dropdowns.length);
-
-//   dropdowns.forEach((dd) => {
-//     const btn = dd.querySelector(".nav-link.has-caret");
-//     const menu = dd.querySelector(".dropdown-menu");
-//     if (!btn || !menu) return;
-
-//     btn.addEventListener("click", (e) => {
-//       console.log("Nav dropdown clicked");
-//       e.preventDefault();
-//       e.stopPropagation();
-
-//       // cek class sebelum
-//       console.log("before:", dd.className);
-
-//       if (dd.classList.contains("open")) {
-//         dd.classList.remove("open");
-//       } else {
-//         dd.classList.add("open");
-//       }
-
-//       // cek class sesudah
-//       console.log("after:", dd.className);
-//     });
-//   });
-
-//   // sementara: matikan auto-close global dulu
-//   // document.addEventListener("click", () => {
-//   //   dropdowns.forEach((dd) => dd.classList.remove("open"));
-//   // });
-// }
-
-// ===== LOGIN STATUS SYNC =====
+// Sinkronisasi status login UI
 function syncLoginStatusUI() {
   const isLoggedIn = sessionStorage.getItem("userLoggedIn") === "true";
   const isAdmin = sessionStorage.getItem("userType") === "admin";
 
-  // Dispatch custom event untuk notify semua manager
   window.dispatchEvent(
     new CustomEvent("loginStatusChanged", {
       detail: { isLoggedIn, isAdmin },
     })
   );
 
-  // Re-render journal jika ada
   if (window.journalManager && typeof window.journalManager.renderJournals === "function") {
     window.journalManager.renderJournals();
   }
 
-  // Re-render pagination jika ada
   if (window.paginationManager && typeof window.paginationManager.render === "function") {
     window.paginationManager.render();
   }
 }
 
-// Listen untuk login status changes
 window.addEventListener("adminLoginStatusChanged", syncLoginStatusUI);
 
-// ===== INITIALIZE ALL SYSTEMS =====
+// Inisialisasi semua sistem saat DOM siap
 document.addEventListener("DOMContentLoaded", () => {
   console.log("DOM ready, init start");
 
-  // ===== CLEAR OLD LOCALSTORAGE =====
   localStorage.removeItem("journals");
   localStorage.removeItem("opinions");
-
-  // console.log("Before setupNavDropdown");
-  // setupNavDropdown();
-  // console.log("After setupNavDropdown");
 
   setupHashSearch();
 
@@ -838,7 +772,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (document.getElementById("journalFullContainer")) {
-    // UNTUK HALAMAN journals.html
     if (typeof EditJournalManager !== "undefined")
       window.editJournalManager = new EditJournalManager();
     if (typeof PaginationManager !== "undefined")
@@ -846,7 +779,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.previewViewer = new PreviewViewer();
     console.log("Journals page systems initialized");
 
-    // SYNC LOGIN STATUS UNTUK RENDER TOMBOL
     syncLoginStatusUI();
     return;
   }
@@ -859,11 +791,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  // UNTUK HALAMAN dashboard_admin.html DAN index.html
   if (typeof StatisticsManager !== "undefined") window.statsManager = new StatisticsManager();
-
-  // ===== COMMENT INI - JOURNALMANAGER UDAH AUTO-INIT DI JURNAL.JS =====
-  // if (typeof JournalManager !== "undefined") window.journalManager = new JournalManager();
 
   if (typeof OpinionManager !== "undefined") window.opinionManager = new OpinionManager();
   if (typeof SearchManager !== "undefined") window.searchManager = new SearchManager();
@@ -877,7 +805,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.loginManager.syncLoginStatus();
   }
 
-  // Stats manager - safely initialize
   try {
     if (window.statsManager && typeof window.statsManager.updateArticleCount === "function") {
       setTimeout(() => {
@@ -895,7 +822,6 @@ document.addEventListener("DOMContentLoaded", () => {
     console.warn("Stats manager not available");
   }
 
-  // SYNC LOGIN STATUS UNTUK RENDER TOMBOL DI ADMIN
   syncLoginStatusUI();
 
   console.log("All systems initialized successfully");

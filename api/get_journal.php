@@ -1,4 +1,5 @@
 <?php
+// get_journal_detail.php
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -7,15 +8,17 @@ header('Access-Control-Allow-Origin: *');
 
 require_once __DIR__ . '/db.php';
 
+// Ambil ID dari parameter URL
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
+// Validasi ID wajib ada
 if (!$id) {
     echo json_encode(['ok' => false, 'message' => 'id required']);
     exit;
 }
 
 try {
-    // ✅ JOIN dengan uploads table untuk get URL terbaru!
+    // Query detail jurnal dengan JOIN ke tabel uploads untuk ambil URL file & cover
     $stmt = $pdo->prepare("
         SELECT 
             j.*,
@@ -30,16 +33,17 @@ try {
     $stmt->execute([$id]);
     $journal = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    // Cek jika jurnal tidak ditemukan
     if (!$journal) {
         echo json_encode(['ok' => false, 'message' => 'Journal not found']);
         exit;
     }
 
-    // ✅ Increment views
+    // Update jumlah views setiap kali detail dibuka
     $updateViews = $pdo->prepare("UPDATE journals SET views = views + 1 WHERE id = ?");
     $updateViews->execute([$id]);
 
-    // ✅ Return with UPDATED file URLs
+    // Kembalikan data jurnal json
     echo json_encode([
         'ok' => true,
         'journal' => $journal
