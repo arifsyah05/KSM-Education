@@ -1,7 +1,21 @@
-// ===== DASHBOARD USER - DATABASE MIGRATION VERSION =====
-// FILE INI ADALAH CODE ORIGINAL + PENAMBAHAN FITUR BARU
+// ===== DASHBOARD USER - COMPLETE FIXED VERSION =====
+// Fixed: View counter yang tidak nambah sendiri
 
 feather.replace();
+
+// ===== TRACK VIEWED ARTICLES (PREVENT DUPLICATE VIEWS) =====
+const viewedArticles = new Set(
+  JSON.parse(localStorage.getItem('viewedArticles') || '[]')
+);
+
+function markAsViewed(articleId) {
+  viewedArticles.add(String(articleId));
+  localStorage.setItem('viewedArticles', JSON.stringify([...viewedArticles]));
+}
+
+function hasBeenViewed(articleId) {
+  return viewedArticles.has(String(articleId));
+}
 
 // ===== LOGIN STATUS CHECK =====
 function checkLoginStatus() {
@@ -13,10 +27,8 @@ async function loadArticles() {
   try {
     console.log("📥 Loading articles from database...");
 
-    // Anti-cache timestamp
     const timestamp = Date.now();
 
-    // Fetch journals with timestamp
     const journalsResponse = await fetch(
       `/ksmaja/api/list_journals.php?limit=50&offset=0&t=${timestamp}`,
       {
@@ -26,7 +38,6 @@ async function loadArticles() {
     );
     const journalsData = await journalsResponse.json();
 
-    // Fetch opinions with timestamp
     let opinionsData = { ok: false, results: [] };
     try {
       const opinionsResponse = await fetch(
@@ -44,7 +55,6 @@ async function loadArticles() {
     let journals = [];
     let opinions = [];
 
-    // Process journals from database
     if (journalsData.ok && journalsData.results) {
       journals = journalsData.results.map((j) => {
         const authors = j.authors
@@ -76,7 +86,6 @@ async function loadArticles() {
       });
     }
 
-    // Process opinions from database
     if (opinionsData.ok && opinionsData.results) {
       opinions = opinionsData.results.map((o) => {
         return {
@@ -118,12 +127,39 @@ async function loadArticles() {
   }
 }
 
-let articles = []; // Initialize empty, will be loaded async
+let articles = [];
 
-// ===== NAVIGATE TO ARTICLE DETAIL =====
+// ===== NAVIGATE TO ARTICLE DETAIL (WITH VIEW TRACKING) =====
 function openArticleDetail(articleId, articleType) {
   console.log("Opening article:", articleId, articleType);
+  
+  // Update views ONLY if not viewed before
+  if (!hasBeenViewed(articleId)) {
+    updateArticleViews(articleId, articleType);
+    markAsViewed(articleId);
+  } else {
+    console.log('ℹ️ Article already viewed, skipping view count update');
+  }
+  
   window.location.href = `explore_jurnal_user.html?id=${articleId}&type=${articleType}`;
+}
+
+// ===== UPDATE VIEWS (ONLY ONCE PER USER) =====
+async function updateArticleViews(id, type) {
+  try {
+    await fetch(`/ksmaja/api/update_views.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: id, type: type === 'opini' ? 'opinion' : 'journal' }),
+    });
+    console.log('✅ View updated for:', id);
+  } catch (error) {
+    console.warn("⚠️ Failed to update views:", error);
+  }
+}
+
+function escapeForAttribute(text) {
+  return (text || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 async function renderArticles() {
@@ -136,9 +172,8 @@ async function renderArticles() {
       <p>MEMUAT ARTIKEL...</p>
     </div>
   `;
-  if (navUser) navUser.innerHTML = ""; // kosongin dulu
+  if (navUser) navUser.innerHTML = "";
 
-  // DATA DARI DATABASE
   articles = await loadArticles();
 
   if (articles.length === 0) {
@@ -182,14 +217,9 @@ async function renderArticles() {
       const typeLabel = article.type === "opini" ? "OPINI" : "JURNAL";
       const typeClass = article.type === "opini" ? "badge-opini" : "badge-jurnal";
 
-      // ========================================
-      // ✅ UPDATED: Tambah Quick Share Button
-      // ========================================
       return `
         <div class="article-card">
-          <div class="article-image-container" onclick="openArticleDetail('${article.id}', '${
-        article.type
-      }')" style="cursor: pointer;">
+          <div class="article-image-container" onclick="openArticleDetail('${article.id}', '${article.type}')" style="cursor: pointer;">
             <img src="${coverImage}" alt="${title}" class="article-image"
                  onerror="this.src='https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=500&h=400&fit=crop'">
             <span class="article-type-badge ${typeClass}">${typeLabel}</span>
@@ -200,25 +230,26 @@ async function renderArticles() {
               <span><i data-feather="calendar" style="width: 14px; height: 14px;"></i> ${formattedDate}</span>
               <span><i data-feather="eye" style="width: 14px; height: 14px;"></i> ${views}</span>
             </div>
-            <div class="article-title" onclick="openArticleDetail('${article.id}', '${
-        article.type
-      }')" style="cursor: pointer;">
+            <div class="article-title" onclick="openArticleDetail('${article.id}', '${article.type}')" style="cursor: pointer;">
               ${title}
             </div>
             ${truncatedAbstract ? `<div class="article-excerpt">${truncatedAbstract}</div>` : ""}
             
-            <!-- ✅ NEW: QUICK SHARE BUTTON -->
+            <!-- ✅ FULL WIDTH SHARE BUTTON -->
             <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0f0f0;">
               <button 
-                class="btn-quick-share" 
+                class="btn-share-article" 
                 data-article-id="${article.id}"
                 data-article-type="${article.type}"
-                data-article-title="${title.replace(/"/g, "&quot;")}"
-                onclick="event.stopPropagation()">
+                data-article-title="${escapeForAttribute(title)}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/>
+                  <circle cx="18" cy="5" r="3"></circle>
+                  <circle cx="6" cy="12" r="3"></circle>
+                  <circle cx="18" cy="19" r="3"></circle>
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                 </svg>
-                Quick Share
+                Share
               </button>
             </div>
           </div>
@@ -227,7 +258,6 @@ async function renderArticles() {
     })
     .join("");
 
-  // ====== TOMBOL LIHAT SEMUA ======
   if (navUser) {
     if (articles.length > 6) {
       navUser.innerHTML = `
@@ -241,6 +271,7 @@ async function renderArticles() {
   }
 
   feather.replace();
+  console.log('✅ Articles rendered, Share buttons ready');
 }
 
 // ===== LOGOUT HANDLER =====
@@ -249,10 +280,7 @@ function setupLogout() {
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {
       if (confirm("YAKIN INGIN LOGOUT?")) {
-        sessionStorage.removeItem("userLoggedIn");
-        sessionStorage.removeItem("userEmail");
-        sessionStorage.removeItem("userType");
-        sessionStorage.removeItem("visitorTracked");
+        sessionStorage.clear();
         localStorage.removeItem("userEmail");
         window.location.href = "./login_user.html";
       }
@@ -269,10 +297,16 @@ function setupNewsletter() {
     subscribeBtn.addEventListener("click", () => {
       const email = newsletterEmail.value.trim();
       if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        alert("TERIMA KASIH! ANDA TELAH BERHASIL SUBSCRIBE NEWSLETTER");
+        showToast("✅ Terima kasih! Anda telah berhasil subscribe newsletter.", "success");
         newsletterEmail.value = "";
       } else {
-        alert("MOHON MASUKKAN EMAIL YANG VALID");
+        showToast("❌ Mohon masukkan email yang valid.", "error");
+      }
+    });
+    
+    newsletterEmail.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        subscribeBtn.click();
       }
     });
   }
@@ -301,12 +335,10 @@ function setupGuestMode() {
   ];
 
   if (!isLoggedIn) {
-    // GUEST MODE
     loggedInElements.forEach((el) => {
       if (el) el.style.display = "none";
     });
 
-    // Show login button in navbar
     const navbar = document.querySelector(".navbar");
     if (navbar && !document.getElementById("guestLoginBtn")) {
       const loginBtn = document.createElement("a");
@@ -327,7 +359,6 @@ function setupGuestMode() {
     if (userNameEl) userNameEl.textContent = "GUEST";
     if (userAvatarEl) userAvatarEl.textContent = "G";
   } else {
-    // LOGGED IN MODE
     loggedInElements.forEach((el) => {
       if (el) el.style.display = "block";
     });
@@ -348,30 +379,46 @@ function setupSearch() {
       if (e.key === "Enter") {
         const query = searchInput.value.trim();
         if (query) {
-          performSearch(query);
+          window.location.href = `journals_user.html?search=${encodeURIComponent(query)}`;
         }
       }
     });
   }
 }
 
-async function performSearch(query) {
-  const articles = await loadArticles();
-  const results = articles.filter((article) => {
-    const title = (article.title || article.judul || "").toLowerCase();
-    const abstract = (article.abstract || article.abstrak || "").toLowerCase();
-    const author = Array.isArray(article.authors)
-      ? article.authors.join(" ").toLowerCase()
-      : (article.author || article.penulis || "").toLowerCase();
-
-    const searchQuery = query.toLowerCase();
-    return (
-      title.includes(searchQuery) || abstract.includes(searchQuery) || author.includes(searchQuery)
-    );
+// ===== TOAST NOTIFICATION =====
+function showToast(message, type = 'info') {
+  const toast = document.createElement('div');
+  toast.className = `toast-notification ${type}`;
+  toast.innerHTML = message;
+  
+  Object.assign(toast.style, {
+    position: 'fixed',
+    bottom: '30px',
+    right: '30px',
+    background: type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6',
+    color: 'white',
+    padding: '16px 24px',
+    borderRadius: '12px',
+    boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+    zIndex: '10000',
+    animation: 'slideInUp 0.3s ease',
+    maxWidth: '400px',
+    fontSize: '15px',
+    fontWeight: '500',
+    lineHeight: '1.5'
   });
 
-  // Redirect to journals page with search query
-  window.location.href = `journals_user.html?search=${encodeURIComponent(query)}`;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.style.animation = 'fadeOut 0.3s ease forwards';
+    setTimeout(() => {
+      if (toast.parentElement) {
+        toast.remove();
+      }
+    }, 300);
+  }, 3000);
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -386,62 +433,65 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupNewsletter();
   setupSearch();
 
-  // INI YANG PENTING UNTUK UI USER
   await renderArticles();
 
   feather.replace();
   console.log("✅ User Dashboard ready");
 });
 
-// Add CSS for loading animation
-const style = document.createElement("style");
-style.textContent = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-document.head.appendChild(style);
-
-// ========================================
-// ✅ NEW FEATURE 1: QUICK SHARE MANAGER
-// Fitur untuk copy link artikel ke clipboard
-// ========================================
-class QuickShareManager {
+// ===== SHARE MANAGER =====
+class ShareManager {
   constructor() {
-    this.setupEventListeners();
+    this.init();
+  }
+
+  init() {
+    console.log('🔗 Initializing Share Manager...');
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.setupEventListeners());
+    } else {
+      this.setupEventListeners();
+    }
   }
 
   setupEventListeners() {
-    // Event delegation untuk tombol share
-    document.addEventListener('click', (e) => {
-      const shareBtn = e.target.closest('.btn-quick-share');
+    document.body.addEventListener('click', (e) => {
+      const shareBtn = e.target.closest('.btn-share-article');
       if (shareBtn) {
         e.preventDefault();
         e.stopPropagation();
-        const articleId = shareBtn.dataset.articleId;
-        const articleType = shareBtn.dataset.articleType;
-        const articleTitle = shareBtn.dataset.articleTitle;
-        this.handleQuickShare(articleId, articleType, articleTitle);
+        e.stopImmediatePropagation();
+        
+        const articleId = shareBtn.getAttribute('data-article-id');
+        const articleType = shareBtn.getAttribute('data-article-type');
+        const articleTitle = shareBtn.getAttribute('data-article-title');
+        
+        console.log('📤 Share button clicked:', { articleId, articleType, articleTitle });
+        
+        this.handleShare(articleId, articleType, articleTitle);
+        return false;
       }
-    });
+    }, true);
+
+    console.log('✅ Share event listeners attached');
   }
 
-  handleQuickShare(articleId, articleType, articleTitle) {
-    // Generate URL untuk share
+  handleShare(articleId, articleType, articleTitle) {
     const baseUrl = window.location.origin;
-    const shareUrl = `${baseUrl}/ksmaja/explore_jurnal_user.html?id=${articleId}&type=${articleType}`;
+    const path = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+    const shareUrl = `${baseUrl}${path}/explore_jurnal_user.html?id=${articleId}&type=${articleType}`;
+    
+    console.log('🔗 Sharing URL:', shareUrl);
+    
     this.copyToClipboard(shareUrl, articleTitle);
   }
 
   async copyToClipboard(url, title) {
     try {
-      // Modern Clipboard API (Chrome, Firefox, Edge)
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(url);
         this.showShareSuccess(title);
       } else {
-        // Fallback untuk browser lama
         this.fallbackCopyToClipboard(url);
         this.showShareSuccess(title);
       }
@@ -451,13 +501,12 @@ class QuickShareManager {
         this.fallbackCopyToClipboard(url);
         this.showShareSuccess(title);
       } catch (fallbackErr) {
-        this.showShareError();
+        showToast('❌ Gagal menyalin link. Silakan coba lagi.', 'error');
       }
     }
   }
 
   fallbackCopyToClipboard(text) {
-    // Metode fallback untuk copy text
     const textArea = document.createElement('textarea');
     textArea.value = text;
     textArea.style.position = 'fixed';
@@ -477,64 +526,16 @@ class QuickShareManager {
   }
 
   showShareSuccess(title) {
-    const message = `✅ Link berhasil disalin!<br><small style="opacity: 0.8">${this.truncateTitle(title, 40)}</small>`;
-    this.showToast(message, 'success');
-  }
-
-  showShareError() {
-    this.showToast('❌ Gagal menyalin link. Silakan coba lagi.', 'error');
-  }
-
-  truncateTitle(title, maxLength) {
-    if (title.length <= maxLength) return title;
-    return title.substring(0, maxLength) + '...';
-  }
-
-  showToast(message, type) {
-    // Buat toast notification
-    const toast = document.createElement('div');
-    toast.className = `quick-share-toast ${type}`;
-    toast.innerHTML = message;
-    
-    // Style inline
-    Object.assign(toast.style, {
-      position: 'fixed',
-      bottom: '30px',
-      right: '30px',
-      background: type === 'success' ? '#10b981' : '#ef4444',
-      color: 'white',
-      padding: '16px 24px',
-      borderRadius: '12px',
-      boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
-      zIndex: '10000',
-      animation: 'slideInUp 0.3s ease',
-      maxWidth: '400px',
-      fontSize: '15px',
-      fontWeight: '500',
-      lineHeight: '1.5'
-    });
-
-    document.body.appendChild(toast);
-    
-    // Auto remove after 3 seconds
-    setTimeout(() => {
-      toast.style.animation = 'fadeOut 0.3s ease forwards';
-      setTimeout(() => {
-        if (toast.parentElement) {
-          toast.remove();
-        }
-      }, 300);
-    }, 3000);
+    const truncatedTitle = title.length > 40 ? title.substring(0, 40) + '...' : title;
+    const message = `✅ Link berhasil disalin!<br><small style="opacity: 0.8">"${truncatedTitle}"</small>`;
+    showToast(message, 'success');
   }
 }
 
-// ========================================
-// ✅ NEW FEATURE 2: DYNAMIC CATEGORIES MANAGER
-// Kategori dinamis berdasarkan tags dari database
-// ========================================
+// ===== DYNAMIC CATEGORIES MANAGER =====
 class DynamicCategoriesManager {
   constructor() {
-    this.categories = new Map(); // Store category counts
+    this.categories = new Map();
     this.loadCategories();
   }
 
@@ -542,7 +543,6 @@ class DynamicCategoriesManager {
     try {
       console.log('📊 Loading dynamic categories from database...');
 
-      // Fetch all articles dengan timestamp anti-cache
       const timestamp = Date.now();
       
       const [journalsResponse, opinionsResponse] = await Promise.all([
@@ -559,16 +559,12 @@ class DynamicCategoriesManager {
       const journalsData = await journalsResponse.json();
       const opinionsData = await opinionsResponse.json();
 
-      // Combine semua articles
       const allArticles = [
         ...(journalsData.ok ? journalsData.results : []),
         ...(opinionsData.ok ? opinionsData.results : [])
       ];
 
-      // Process tags dan hitung per kategori
       this.processArticleTags(allArticles);
-
-      // Render categories ke UI
       this.renderCategories();
 
       console.log(`✅ Loaded ${this.categories.size} dynamic categories`);
@@ -585,7 +581,6 @@ class DynamicCategoriesManager {
     articles.forEach(article => {
       let tags = article.tags;
 
-      // Parse tags jika masih string
       if (typeof tags === 'string' && tags.trim()) {
         try {
           tags = JSON.parse(tags);
@@ -594,12 +589,10 @@ class DynamicCategoriesManager {
         }
       }
 
-      // Ensure tags adalah array
       if (!Array.isArray(tags)) {
         tags = [];
       }
 
-      // Count setiap tag
       tags.forEach(tag => {
         const normalizedTag = this.normalizeTag(tag);
         if (normalizedTag) {
@@ -609,7 +602,6 @@ class DynamicCategoriesManager {
       });
     });
 
-    // Sort by count (descending)
     this.categories = new Map(
       [...this.categories.entries()].sort((a, b) => b[1] - a[1])
     );
@@ -618,7 +610,6 @@ class DynamicCategoriesManager {
   normalizeTag(tag) {
     if (!tag || typeof tag !== 'string') return null;
     
-    // Capitalize first letter setiap kata
     return tag.trim()
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
@@ -632,7 +623,6 @@ class DynamicCategoriesManager {
       return;
     }
 
-    // Ambil top 12 categories
     const topCategories = [...this.categories.entries()].slice(0, 12);
 
     if (topCategories.length === 0) {
@@ -651,7 +641,6 @@ class DynamicCategoriesManager {
   }
 
   renderFallbackCategories() {
-    // Fallback jika tidak ada data
     const grid = document.querySelector('.categories-grid');
     if (!grid) return;
 
@@ -665,66 +654,33 @@ class DynamicCategoriesManager {
   }
 
   escapeHtml(text) {
-    // Escape HTML untuk prevent XSS
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
-
-  getCategoryCount(categoryName) {
-    return this.categories.get(this.normalizeTag(categoryName)) || 0;
-  }
-
-  getAllCategories() {
-    return Array.from(this.categories.keys());
-  }
 }
 
-// ========================================
-// ✅ INITIALIZE NEW FEATURES
-// ========================================
-console.log('🔧 Initializing Quick Share & Dynamic Categories...');
+// ===== INITIALIZE =====
+console.log('🔧 Initializing Share & Dynamic Categories...');
 
-// Initialize Quick Share Manager
-window.quickShareManager = new QuickShareManager();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    window.shareManager = new ShareManager();
+    window.dynamicCategoriesManager = new DynamicCategoriesManager();
+  });
+} else {
+  window.shareManager = new ShareManager();
+  window.dynamicCategoriesManager = new DynamicCategoriesManager();
+}
 
-// Initialize Dynamic Categories Manager
-window.dynamicCategoriesManager = new DynamicCategoriesManager();
-
-// ========================================
-// ✅ ADD CSS FOR NEW FEATURES
-// ========================================
-const newFeaturesStyle = document.createElement('style');
-newFeaturesStyle.textContent = `
-  /* Quick Share Button */
-  .btn-quick-share {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 14px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    font-family: inherit;
+// ===== STYLES =====
+const styles = document.createElement('style');
+styles.textContent = `
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
 
-  .btn-quick-share:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-  }
-
-  .btn-quick-share svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  /* Toast Animations */
   @keyframes slideInUp {
     from {
       transform: translateY(100px);
@@ -745,21 +701,50 @@ newFeaturesStyle.textContent = `
     }
   }
 
-  /* Responsive */
+  /* Full Width Share Button */
+  .btn-share-article {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-share-article:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-share-article:active {
+    transform: translateY(0);
+  }
+
+  .btn-share-article svg {
+    width: 18px;
+    height: 18px;
+  }
+
   @media (max-width: 768px) {
-    .quick-share-toast {
+    .toast-notification {
       right: 15px !important;
       left: 15px !important;
       bottom: 20px !important;
       max-width: calc(100% - 30px) !important;
     }
-    
-    .btn-quick-share {
-      width: 100%;
-      justify-content: center;
-    }
   }
 `;
-document.head.appendChild(newFeaturesStyle);
+document.head.appendChild(styles);
 
-console.log('✅ Quick Share & Dynamic Categories initialized successfully');
+console.log('✅ Dashboard User initialized - View tracking: localStorage-based');
