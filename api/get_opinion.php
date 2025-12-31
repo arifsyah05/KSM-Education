@@ -21,7 +21,7 @@ try {
     error_log("=== GET OPINION API ===");
     error_log("Opinion ID: $id");
     
-    // ✅ FIX: JOIN with uploads table using 'url' column
+    //  FIX: JOIN with uploads table using 'url' column
     $stmt = $pdo->prepare("
         SELECT 
             o.*,
@@ -68,7 +68,7 @@ try {
     ]);
     
 } catch (Exception $e) {
-    error_log('❌ Get opinion error: ' . $e->getMessage());
+    error_log(' Get opinion error: ' . $e->getMessage());
     
     http_response_code(500);
     echo json_encode([

@@ -487,7 +487,7 @@
 .sort-menu {
   position: absolute;
   top: calc(100% + 8px);
-  left: 0; /* ✅ Tetep left: 0 di desktop */
+  left: 0; /*  Tetep left: 0 di desktop */
   background: white;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -699,7 +699,7 @@
     border-bottom: 1px solid #e0e0e0;
   }
 
-  /* ✅ FIX: SHOW AUTH SECTION ON MOBILE (for search box) */
+  /*  FIX: SHOW AUTH SECTION ON MOBILE (for search box) */
   .auth-section {
     display: none; /* Keep hidden in header */
   }
@@ -727,7 +727,7 @@
     height: 180px;
   }
 
-  /* ✅ FIX: Filter Section Mobile */
+  /*  FIX: Filter Section Mobile */
   .filter-section {
     flex-direction: column;
     gap: 12px;
@@ -756,7 +756,7 @@
     width: 100%;
   }
 
-  /* ✅ FIX: Search Box Mobile */
+  /*  FIX: Search Box Mobile */
   .search-box {
     flex: 1;
     min-width: 0;
@@ -799,7 +799,7 @@
     min-width: 60px;
   }
 
-  /* ✅ ICON SORT DROPDOWN MOBILE */
+  /*  ICON SORT DROPDOWN MOBILE */
   .filter-group .sort-dropdown {
     width: auto;
     flex-shrink: 0;

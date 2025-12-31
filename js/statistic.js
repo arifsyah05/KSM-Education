@@ -7,8 +7,8 @@ class StatisticsManager {
     this.visitorCountElement = document.getElementById("visitorCount");
 
     console.log("📍 Elements found:", {
-      articleCount: this.articleCountElement ? "✅" : "❌",
-      visitorCount: this.visitorCountElement ? "✅" : "❌",
+      articleCount: this.articleCountElement ? "" : "",
+      visitorCount: this.visitorCountElement ? "" : "",
     });
 
     this.currentArticles = 0;
@@ -18,7 +18,7 @@ class StatisticsManager {
 
   async init() {
     if (!this.articleCountElement && !this.visitorCountElement) {
-      console.error("❌ No stat elements found! Aborting StatisticsManager init.");
+      console.error(" No stat elements found! Aborting StatisticsManager init.");
       return;
     }
 
@@ -64,7 +64,7 @@ class StatisticsManager {
       if (data.ok && data.stats) {
         this.currentArticles = data.stats.total_articles || 0;
         this.currentVisitors = data.stats.total_visitors || 0;
-        console.log("✅ Stats loaded:", {
+        console.log(" Stats loaded:", {
           articles: this.currentArticles,
           visitors: this.currentVisitors,
         });
@@ -72,7 +72,7 @@ class StatisticsManager {
         console.warn("⚠️ Stats API returned not OK");
       }
     } catch (error) {
-      console.error("❌ Error loading stats:", error);
+      console.error(" Error loading stats:", error);
     }
   }
 
@@ -93,11 +93,11 @@ class StatisticsManager {
 
       if (data.ok) {
         sessionStorage.setItem("visitorTracked", "1");
-        console.log("✅ Visitor tracked");
+        console.log(" Visitor tracked");
         if (data.new) await this.refreshStatistics();
       }
     } catch (error) {
-      console.error("❌ Error tracking visitor:", error);
+      console.error(" Error tracking visitor:", error);
     }
   }
 
@@ -152,7 +152,7 @@ class StatisticsManager {
       } else {
         element.textContent = String(end);
         element.classList.remove("counting");
-        console.log(`✅ Animation complete for ${element.id}: ${end}`);
+        console.log(` Animation complete for ${element.id}: ${end}`);
       }
     };
 
@@ -173,14 +173,14 @@ class StatisticsManager {
 if (document.readyState === "loading") {
   console.log("⏳ DOM still loading, waiting for DOMContentLoaded...");
   document.addEventListener("DOMContentLoaded", () => {
-    console.log("✅ DOM ready, initializing StatisticsManager");
+    console.log(" DOM ready, initializing StatisticsManager");
     localStorage.removeItem("siteStatisticsCache");
     window.statisticsManager = new StatisticsManager();
   });
 } else {
-  console.log("✅ DOM already ready, initializing StatisticsManager immediately");
+  console.log(" DOM already ready, initializing StatisticsManager immediately");
   localStorage.removeItem("siteStatisticsCache");
   window.statisticsManager = new StatisticsManager();
 }
 
-console.log("✅ statistic.js loaded (Database Mode - No Cache)");
+console.log(" statistic.js loaded (Database Mode - No Cache)");

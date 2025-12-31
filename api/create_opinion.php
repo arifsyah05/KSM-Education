@@ -23,7 +23,7 @@ try {
     $category = $input['category'] ?? 'opini';
     $author_name = $input['authorname'] ?? $input['author_name'] ?? $input['authorName'] ?? '';
     
-    // ✅ FIX: Use correct column name 'url'
+    //  FIX: Use correct column name 'url'
     $file_upload_id = null;
     $cover_upload_id = null;
     
@@ -73,7 +73,7 @@ try {
     
     $id = $pdo->lastInsertId();
     
-    error_log("✅ Opinion created with ID: $id");
+    error_log(" Opinion created with ID: $id");
     
     echo json_encode([
         'ok' => true,
@@ -82,7 +82,7 @@ try {
     ]);
     
 } catch (Exception $e) {
-    error_log('❌ Create opinion error: ' . $e->getMessage());
+    error_log(' Create opinion error: ' . $e->getMessage());
     error_log('Stack trace: ' . $e->getTraceAsString());
     
     http_response_code(500);

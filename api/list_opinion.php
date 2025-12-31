@@ -75,7 +75,7 @@ try {
         'offset' => $offset
     ]);
 } catch (Exception $e) {
-    error_log('❌ List opinions error: ' . $e->getMessage());
+    error_log('List opinions error: ' . $e->getMessage());
     error_log('Stack trace: ' . $e->getTraceAsString());
 
     http_response_code(500);

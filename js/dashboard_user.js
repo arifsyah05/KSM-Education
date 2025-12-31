@@ -119,10 +119,10 @@ async function loadArticles() {
       return dateB - dateA;
     });
 
-    console.log(`📊 Total articles from database: ${articles.length}`);
+    console.log(`Total articles from database: ${articles.length}`);
     return articles;
   } catch (error) {
-    console.error("❌ Error loading articles from database:", error);
+    console.error("Error loading articles from database:", error);
     return [];
   }
 }
@@ -138,7 +138,7 @@ function openArticleDetail(articleId, articleType) {
     updateArticleViews(articleId, articleType);
     markAsViewed(articleId);
   } else {
-    console.log('ℹ️ Article already viewed, skipping view count update');
+    console.log('Article already viewed, skipping view count update');
   }
   
   window.location.href = `explore_jurnal_user.html?id=${articleId}&type=${articleType}`;
@@ -152,7 +152,7 @@ async function updateArticleViews(id, type) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ id: id, type: type === 'opini' ? 'opinion' : 'journal' }),
     });
-    console.log('✅ View updated for:', id);
+    console.log(' View updated for:', id);
   } catch (error) {
     console.warn("⚠️ Failed to update views:", error);
   }
@@ -235,7 +235,7 @@ async function renderArticles() {
             </div>
             ${truncatedAbstract ? `<div class="article-excerpt">${truncatedAbstract}</div>` : ""}
             
-            <!-- ✅ FULL WIDTH SHARE BUTTON -->
+            <!--  FULL WIDTH SHARE BUTTON -->
             <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0f0f0;">
               <button 
                 class="btn-share-article" 
@@ -271,7 +271,7 @@ async function renderArticles() {
   }
 
   feather.replace();
-  console.log('✅ Articles rendered, Share buttons ready');
+  console.log(' Articles rendered, Share buttons ready');
 }
 
 // ===== LOGOUT HANDLER =====
@@ -297,10 +297,10 @@ function setupNewsletter() {
     subscribeBtn.addEventListener("click", () => {
       const email = newsletterEmail.value.trim();
       if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        showToast("✅ Terima kasih! Anda telah berhasil subscribe newsletter.", "success");
+        showToast("Terima kasih! Anda telah berhasil subscribe newsletter.", "success");
         newsletterEmail.value = "";
       } else {
-        showToast("❌ Mohon masukkan email yang valid.", "error");
+        showToast("Mohon masukkan email yang valid.", "error");
       }
     });
     
@@ -436,7 +436,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await renderArticles();
 
   feather.replace();
-  console.log("✅ User Dashboard ready");
+  console.log(" User Dashboard ready");
 });
 
 // ===== SHARE MANAGER =====
@@ -473,7 +473,7 @@ class ShareManager {
       }
     }, true);
 
-    console.log('✅ Share event listeners attached');
+    console.log(' Share event listeners attached');
   }
 
   handleShare(articleId, articleType, articleTitle) {
@@ -501,7 +501,7 @@ class ShareManager {
         this.fallbackCopyToClipboard(url);
         this.showShareSuccess(title);
       } catch (fallbackErr) {
-        showToast('❌ Gagal menyalin link. Silakan coba lagi.', 'error');
+        showToast('Gagal menyalin link. Silakan coba lagi.', 'error');
       }
     }
   }
@@ -527,7 +527,7 @@ class ShareManager {
 
   showShareSuccess(title) {
     const truncatedTitle = title.length > 40 ? title.substring(0, 40) + '...' : title;
-    const message = `✅ Link berhasil disalin!<br><small style="opacity: 0.8">"${truncatedTitle}"</small>`;
+    const message = ` Link berhasil disalin!<br><small style="opacity: 0.8">"${truncatedTitle}"</small>`;
     showToast(message, 'success');
   }
 }
@@ -567,10 +567,10 @@ class DynamicCategoriesManager {
       this.processArticleTags(allArticles);
       this.renderCategories();
 
-      console.log(`✅ Loaded ${this.categories.size} dynamic categories`);
+      console.log(` Loaded ${this.categories.size} dynamic categories`);
 
     } catch (error) {
-      console.error('❌ Error loading categories:', error);
+      console.error('Error loading categories:', error);
       this.renderFallbackCategories();
     }
   }
@@ -637,7 +637,7 @@ class DynamicCategoriesManager {
       </div>
     `).join('');
 
-    console.log(`✅ Rendered ${topCategories.length} categories to UI`);
+    console.log(` Rendered ${topCategories.length} categories to UI`);
   }
 
   renderFallbackCategories() {
@@ -747,4 +747,4 @@ styles.textContent = `
 `;
 document.head.appendChild(styles);
 
-console.log('✅ Dashboard User initialized - View tracking: localStorage-based');
+console.log(' Dashboard User initialized - View tracking: localStorage-based');

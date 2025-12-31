@@ -99,13 +99,13 @@ class JournalManager {
             views: parseInt(j.views) || 0,
           };
         });
-        console.log(`✅ Loaded ${this.journals.length} journals from database`);
+        console.log(` Loaded ${this.journals.length} journals from database`);
       } else {
         console.warn("⚠️ No journals found or database empty");
         this.journals = []; // Clear array if database is empty
       }
     } catch (error) {
-      console.error("❌ Error loading journals from database:", error);
+      console.error(" Error loading journals from database:", error);
       this.journals = [];
     }
   }
@@ -304,7 +304,7 @@ class JournalManager {
 
   async deleteJournal(id, title = "") {
     if (!id) {
-      alert("❌ ID journal tidak valid");
+      alert(" ID journal tidak valid");
       return;
     }
     const confirmMsg = title
@@ -327,7 +327,7 @@ class JournalManager {
 
       const result = await response.json();
       if (result.ok) {
-        alert("✅ Jurnal berhasil dihapus!");
+        alert(" Jurnal berhasil dihapus!");
         this.journals = this.journals.filter((j) => String(j.id) !== String(id));
         this.renderJournals();
         window.dispatchEvent(
@@ -346,7 +346,7 @@ class JournalManager {
         throw new Error(result.message || "Gagal menghapus jurnal dari database");
       }
     } catch (error) {
-      alert("❌ Gagal menghapus jurnal: " + error.message);
+      alert(" Gagal menghapus jurnal: " + error.message);
       const card = document.querySelector(`[data-journal-id="${id}"]`);
       if (card) {
         card.style.opacity = "1";
@@ -477,7 +477,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
   journalManager = new JournalManager();
-  console.log("✅ JournalManager initialized (Full Database Integration)");
+  console.log(" JournalManager initialized (Full Database Integration)");
   window.journalManager = journalManager;
 });
 

@@ -46,7 +46,7 @@ function copyShareLink() {
       .writeText(currentShareUrl)
       .then(() => {
         if (typeof showToast === "function") {
-          showToast("✅ Link berhasil disalin!", "success");
+          showToast(" Link berhasil disalin!", "success");
         } else {
           alert("Link berhasil disalin!\n\n" + currentShareUrl);
         }

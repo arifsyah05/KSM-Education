@@ -39,14 +39,14 @@
                         journal.server_id = result.id;
                         journal.migrated_at = new Date().toISOString();
                         results.journals.success++;
-                        console.log(`✅ Migrated journal: ${journal.title}`);
+                        console.log(` Migrated journal: ${journal.title}`);
                     } else {
                         results.journals.failed++;
-                        console.error(`❌ Failed journal: ${journal.title}`, result.message);
+                        console.error(` Failed journal: ${journal.title}`, result.message);
                     }
                 } catch (err) {
                     results.journals.failed++;
-                    console.error(`❌ Error migrating journal: ${journal.title}`, err);
+                    console.error(` Error migrating journal: ${journal.title}`, err);
                 }
             }
 
@@ -84,14 +84,14 @@
                         opinion.server_id = result.id;
                         opinion.migrated_at = new Date().toISOString();
                         results.opinions.success++;
-                        console.log(`✅ Migrated opinion: ${opinion.title}`);
+                        console.log(` Migrated opinion: ${opinion.title}`);
                     } else {
                         results.opinions.failed++;
-                        console.error(`❌ Failed opinion: ${opinion.title}`, result.message);
+                        console.error(` Failed opinion: ${opinion.title}`, result.message);
                     }
                 } catch (err) {
                     results.opinions.failed++;
-                    console.error(`❌ Error migrating opinion: ${opinion.title}`, err);
+                    console.error(` Error migrating opinion: ${opinion.title}`, err);
                 }
             }
 
@@ -112,7 +112,7 @@
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
     if (results.total > 0) {
-        console.log('✅ Migration completed successfully!');
+        console.log(' Migration completed successfully!');
         console.log('💡 You can now safely clear localStorage data.');
     } else {
         console.log('ℹ️ No new data to migrate.');

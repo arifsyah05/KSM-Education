@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 require_once 'db.php';
 
 try {
-    // ✅ Support multiple methods to get ID
+    //  Support multiple methods to get ID
     $id = null;
     
     // Method 1: From query string (GET/DELETE with ?id=X)
@@ -36,7 +36,7 @@ try {
         }
     }
     
-    // ✅ Validate ID
+    //  Validate ID
     if (!$id) {
         error_log('Delete journal error: No ID provided');
         error_log('GET params: ' . print_r($_GET, true));
@@ -46,7 +46,7 @@ try {
     
     error_log('Attempting to delete journal with ID: ' . $id);
     
-    // ✅ Check if journal exists first
+    //  Check if journal exists first
     $checkStmt = $pdo->prepare("SELECT id FROM journals WHERE id = ?");
     $checkStmt->execute([$id]);
     
@@ -54,7 +54,7 @@ try {
         throw new Exception('Journal not found');
     }
     
-    // ✅ Delete journal from database
+    //  Delete journal from database
     $stmt = $pdo->prepare("DELETE FROM journals WHERE id = ?");
     $stmt->execute([$id]);
     

@@ -86,7 +86,7 @@ async function getArticleById(id, type) {
           type: "jurnal",
         };
       } else {
-        console.error("❌ Journal not found:", data);
+        console.error(" Journal not found:", data);
         return null;
       }
     } else if (type === "opini") {
@@ -121,12 +121,12 @@ async function getArticleById(id, type) {
           type: "opini",
         };
       } else {
-        console.error("❌ Opinion not found:", data);
+        console.error(" Opinion not found:", data);
         return null;
       }
     }
   } catch (error) {
-    console.error("❌ Error fetching article:", error);
+    console.error(" Error fetching article:", error);
     return null;
   }
 }
@@ -174,7 +174,7 @@ async function loadArticleDetail() {
       return;
     }
 
-    console.log("✅ Article loaded:", article);
+    console.log(" Article loaded:", article);
 
     if (loadingState) {
       loadingState.style.display = "none";
@@ -182,12 +182,12 @@ async function loadArticleDetail() {
 
     if (articleDetail) {
       articleDetail.style.display = "block";
-      console.log("✅ Article detail shown");
+      console.log(" Article detail shown");
     }
 
     await displayArticle(article, articleType);
   } catch (error) {
-    console.error("❌ Error loading article:", error);
+    console.error(" Error loading article:", error);
     showError(
       "Failed to load article\n\nDebug Info:\nArticle ID: " +
         articleId +
@@ -224,7 +224,7 @@ async function displayArticle(article, type) {
         "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=1200&h=400&fit=crop";
     };
 
-    console.log("✅ Cover image set:", coverUrl);
+    console.log(" Cover image set:", coverUrl);
   }
 
   // Meta info
@@ -258,7 +258,7 @@ async function displayArticle(article, type) {
       tagsContainer.innerHTML = article.tags
         .map((tag) => `<span class="tag">${tag}</span>`)
         .join("");
-      console.log("✅ Tags displayed:", article.tags.length);
+      console.log(" Tags displayed:", article.tags.length);
     } else {
       tagsSection.style.display = "none";
     }
@@ -278,7 +278,7 @@ async function displayArticle(article, type) {
         `
         )
         .join("");
-      console.log("✅ Authors displayed:", article.authors);
+      console.log(" Authors displayed:", article.authors);
     } else {
       const singleAuthor = article.author || article.penulis || "Unknown Author";
       authorsContainer.innerHTML = `
@@ -306,7 +306,7 @@ async function displayArticle(article, type) {
         `
         )
         .join("");
-      console.log("✅ Pengurus displayed:", article.pengurus.length);
+      console.log(" Pengurus displayed:", article.pengurus.length);
     } else {
       pengurusSection.style.display = "none";
     }
@@ -334,7 +334,7 @@ async function displayArticle(article, type) {
     if (type === "jurnal" && article.volume) {
       volumeSection.style.display = "block";
       volumeElement.textContent = article.volume;
-      console.log("✅ Volume displayed:", article.volume);
+      console.log(" Volume displayed:", article.volume);
     } else {
       volumeSection.style.display = "none";
     }
@@ -368,12 +368,12 @@ async function displayArticle(article, type) {
     feather.replace();
   }
 
-  console.log("✅ Article displayed successfully");
+  console.log(" Article displayed successfully");
 }
 
 // ===== SHOW ERROR =====
 function showError(message) {
-  console.error("❌ Showing error:", message);
+  console.error(" Showing error:", message);
 
   const loadingState = document.getElementById("loadingState");
   const errorState = document.getElementById("errorState");
@@ -481,7 +481,7 @@ async function performSearch(query) {
 
     displaySearchResults(results, query);
   } catch (error) {
-    console.error("❌ Search error:", error);
+    console.error(" Search error:", error);
   }
 }
 
@@ -528,4 +528,4 @@ document.addEventListener("DOMContentLoaded", () => {
   if (typeof feather !== "undefined") feather.replace();
 });
 
-console.log("✅ explore_jurnal_user.js loaded (Database Mode)");
+console.log(" explore_jurnal_user.js loaded (Database Mode)");

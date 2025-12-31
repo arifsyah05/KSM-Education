@@ -83,7 +83,7 @@ class OpinionsPageManager {
         this.filteredOpinions = [];
       }
     } catch (error) {
-      console.error('❌ Error loading opinions from database:', error);
+      console.error(' Error loading opinions from database:', error);
       
       //  FEATURE: Fallback to localStorage if database fails
       console.warn('⚠️ Falling back to localStorage...');
@@ -280,10 +280,10 @@ class OpinionsPageManager {
         throw new Error(result.message || 'Gagal menghapus opini dari database');
       }
     } catch (error) {
-      console.error('❌ Delete error:', error);
+      console.error(' Delete error:', error);
       
       //  FEATURE: Error notification
-      alert('❌ Gagal menghapus opini: ' + error.message);
+      alert(' Gagal menghapus opini: ' + error.message);
       
       //  Restore card UI on error
       const card = document.querySelector(`[data-opinion-id="${id}"]`);

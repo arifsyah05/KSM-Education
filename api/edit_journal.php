@@ -22,8 +22,8 @@ try {
     $title = $input['title'] ?? '';
     $abstract = $input['abstract'] ?? '';
     $authors = $input['authors'] ?? [];
-    $tags = $input['tags'] ?? [];         // ✅ TAMBAH
-    $pengurus = $input['pengurus'] ?? []; // ✅ TAMBAH
+    $tags = $input['tags'] ?? [];         //  TAMBAH
+    $pengurus = $input['pengurus'] ?? []; //  TAMBAH
     $email = $input['email'] ?? '';
     $contact = $input['contact'] ?? '';
     $volume = $input['volume'] ?? '';
@@ -32,7 +32,7 @@ try {
         throw new Exception('Title and abstract are required');
     }
 
-    // ✅ Encode to JSON
+    //  Encode to JSON
     $authorsJson = json_encode($authors);
     $tagsJson = json_encode($tags);
     $pengurusJson = json_encode($pengurus);
@@ -42,8 +42,8 @@ try {
         SET title = ?, 
             abstract = ?, 
             authors = ?, 
-            tags = ?,         -- ✅ TAMBAH
-            pengurus = ?,     -- ✅ TAMBAH
+            tags = ?,         --  TAMBAH
+            pengurus = ?,     --  TAMBAH
             email = ?, 
             contact = ?, 
             volume = ?, 

@@ -276,17 +276,17 @@ class EditJournalManager {
       this.addAuthorField();
     });
 
-    // ✅ Pengurus
+    //  Pengurus
     this.addPengurusBtn?.addEventListener("click", () => {
       this.addPengurusField();
     });
 
-    // ✅ Tags
+    //  Tags
     this.addTagBtn?.addEventListener("click", () => {
       this.addTag();
     });
 
-    // ✅ Tag input - Enter key
+    //  Tag input - Enter key
     this.tagInput?.addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
         e.preventDefault();
@@ -299,7 +299,7 @@ class EditJournalManager {
       this.handleEditSubmit();
     });
 
-    console.log("✅ EditJournalManager initialized (with Tags & Pengurus)");
+    console.log(" EditJournalManager initialized (with Tags & Pengurus)");
   }
 
   // ===== ADD TAG =====
@@ -394,13 +394,13 @@ class EditJournalManager {
       document.getElementById("editVolume").value = journal.volume || "";
       document.getElementById("editAbstrak").value = journal.abstract || "";
 
-      // ✅ Populate Tags
+      //  Populate Tags
       this.populateTags(journal.tags);
 
-      // ✅ Populate Pengurus
+      //  Populate Pengurus
       this.populatePengurus(journal.pengurus);
 
-      // ✅ Populate Authors
+      //  Populate Authors
       this.populateAuthors(journal.authors);
 
       // Tampilkan modal
@@ -412,7 +412,7 @@ class EditJournalManager {
       }
     } catch (error) {
       console.error("Error loading journal:", error);
-      alert("❌ Gagal memuat data jurnal: " + error.message);
+      alert(" Gagal memuat data jurnal: " + error.message);
     }
   }
 
@@ -619,7 +619,7 @@ class EditJournalManager {
     const pengurus = this.getPengurus();
 
     try {
-      // ✅ GANTI DENGAN FORMDATA!
+      //  GANTI DENGAN FORMDATA!
       const formData = new FormData();
 
       // Add journal ID
@@ -637,14 +637,14 @@ class EditJournalManager {
       if (tags.length > 0) formData.append("tags", JSON.stringify(tags));
       if (pengurus.length > 0) formData.append("pengurus", JSON.stringify(pengurus));
 
-      // ✅ HANDLE FILE UPLOAD
+      //  HANDLE FILE UPLOAD
       const fileInput = document.getElementById("editFileInput");
       if (fileInput && fileInput.files[0]) {
         formData.append("file", fileInput.files[0]);
         console.log("📄 Uploading new file:", fileInput.files[0].name);
       }
 
-      // ✅ HANDLE COVER UPLOAD
+      //  HANDLE COVER UPLOAD
       const coverInput = document.getElementById("editCoverInput");
       if (coverInput && coverInput.files[0]) {
         formData.append("cover", coverInput.files[0]);
@@ -654,11 +654,11 @@ class EditJournalManager {
       // Show loading
       this.showLoading("Menyimpan perubahan...");
 
-      // ✅ SEND REQUEST KE update_journal.php
+      //  SEND REQUEST KE update_journal.php
       const response = await fetch("/ksmaja/api/update_journal.php", {
         method: "POST",
         body: formData, // ← FormData, bukan JSON!
-        // ❌ JANGAN SET Content-Type header!
+        //  JANGAN SET Content-Type header!
       });
 
       const result = await response.json();
@@ -669,7 +669,7 @@ class EditJournalManager {
         throw new Error(result.message || "Failed to update journal");
       }
 
-      alert("✅ Jurnal berhasil diupdate!");
+      alert(" Jurnal berhasil diupdate!");
       this.closeEditModal();
 
       // Clear cache & reload
@@ -683,11 +683,11 @@ class EditJournalManager {
     } catch (error) {
       console.error("Edit journal error:", error);
       this.hideLoading();
-      alert("❌ Gagal update jurnal: " + error.message);
+      alert(" Gagal update jurnal: " + error.message);
     }
   }
 
-  // ✅ TAMBAH METHOD LOADING
+  //  TAMBAH METHOD LOADING
   showLoading(message) {
     let overlay = document.getElementById("editLoadingOverlay");
     if (!overlay) {

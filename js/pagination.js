@@ -72,7 +72,7 @@ class PaginationManager {
         this.filteredItems = [];
       }
     } catch (error) {
-      console.error(`❌ Error loading ${this.dataType}s:`, error);
+      console.error(` Error loading ${this.dataType}s:`, error);
 
       console.warn("⚠️ Falling back to localStorage...");
       const storageKey = this.dataType === "jurnal" ? "journals" : "opinions";
